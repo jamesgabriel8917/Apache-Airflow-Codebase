@@ -1,12 +1,12 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.dummy import DummyOperator
 from datetime import datetime
-
-def hello_world():
-    print("Hello, Airflow!")
 
 default_args = {
     'owner': 'airflow',
+    'depends_on_past': False,
+    'retries': 1,
     'start_date': datetime(2024, 6, 1),
 }
 
@@ -16,7 +16,9 @@ with DAG(
     schedule_interval='@daily',
     catchup=False,
 ) as dag:
-    task_hello = PythonOperator(
-        task_id='hello_world_task',
-        python_callable=hello_world,
-    )
+
+    start = DummyOperator(task_id='start', dag=dag)
+    end = DummyOperator(task_id='end', dag=dag)
+
+
+    start >> end
